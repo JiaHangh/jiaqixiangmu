@@ -1,14 +1,12 @@
 package com.baidu.shop.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baidu.shop.com.baidu.shop.base.Result;
 import com.baidu.shop.entity.CategoryEntity;
 import com.google.gson.JsonObject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -26,4 +24,7 @@ public interface CategoryService {
     @PutMapping(value = "/category/update")
     Result<JsonObject> editCategory(@RequestBody CategoryEntity categoryEntity);
 
+    @ApiOperation(value = "新增分类")
+    @PostMapping(value = "/category/save")
+    Result<JSONObject> addCategory(@RequestBody CategoryEntity categoryEntity);
 }
