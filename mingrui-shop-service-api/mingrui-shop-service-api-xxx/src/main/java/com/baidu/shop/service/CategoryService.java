@@ -7,6 +7,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
@@ -17,6 +19,10 @@ public interface CategoryService {
     Result<List<CategoryEntity>> getCategoryByPid(Integer pid);
 
     @ApiOperation(value = "通过id删除分类")
-    @DeleteMapping("/category/delete")
+    @DeleteMapping(value = "/category/delete")
     Result<JsonObject> delCategory(Integer id);
+
+    @ApiOperation(value = "根据id修改分类信息")
+    @PutMapping(value = "/category/update")
+    Result<JsonObject> editCategory(@RequestBody CategoryEntity categoryEntity);
 }

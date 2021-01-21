@@ -60,4 +60,16 @@ public class CategoryServiceImpl extends BaseApiService implements CategoryServi
 
         return this.setResultSuccess();
     }
+
+    //修改
+    @Override
+    public Result<JsonObject> editCategory(CategoryEntity categoryEntity) {
+        try{
+            categoryMapper.updateByPrimaryKeySelective(categoryEntity);
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return this.setResultSuccess();
+    }
 }
