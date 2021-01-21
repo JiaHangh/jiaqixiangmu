@@ -25,4 +25,5 @@ public interface CategoryService {
     @ApiOperation(value = "根据id修改分类信息")
     @PutMapping(value = "/category/update")
     Result<JsonObject> editCategory(@RequestBody CategoryEntity categoryEntity);
+
 }
