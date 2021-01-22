@@ -1,4 +1,4 @@
-package com.baidu.shop.com.baidu.shop.base;
+package com.baidu.shop.base;
 
 import com.baidu.shop.status.HTTPStatus;
 import com.baidu.shop.utils.JSONUtil;

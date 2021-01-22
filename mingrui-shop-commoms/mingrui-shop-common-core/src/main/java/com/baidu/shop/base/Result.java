@@ -1,4 +1,4 @@
-package com.baidu.shop.com.baidu.shop.base;
+package com.baidu.shop.base;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

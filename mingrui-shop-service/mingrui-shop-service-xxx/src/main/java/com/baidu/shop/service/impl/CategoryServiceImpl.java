@@ -1,8 +1,8 @@
 package com.baidu.shop.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
-import com.baidu.shop.com.baidu.shop.base.BaseApiService;
-import com.baidu.shop.com.baidu.shop.base.Result;
+import com.baidu.shop.base.BaseApiService;
+import com.baidu.shop.base.Result;
 import com.baidu.shop.entity.CategoryEntity;
 import com.baidu.shop.mapper.CategoryMapper;
 import com.baidu.shop.service.CategoryService;
@@ -77,11 +77,13 @@ public class CategoryServiceImpl extends BaseApiService implements CategoryServi
     //新增
     @Override
     public Result<JSONObject> addCategory(CategoryEntity categoryEntity) {
-        try {
-            categoryMapper.insertSelective(categoryEntity);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        CategoryEntity categoryEntity1 = new CategoryEntity();
+        categoryEntity1.setId(categoryEntity.getParentId());
+        categoryEntity1.setIsParent(1);
+        categoryMapper.updateByPrimaryKeySelective(categoryEntity1);
+
+        categoryMapper.insertSelective(categoryEntity);
+
         return this.setResultSuccess();
     }
 }
