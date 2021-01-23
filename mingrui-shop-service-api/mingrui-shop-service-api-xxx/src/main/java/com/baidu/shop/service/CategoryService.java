@@ -29,4 +29,5 @@ public interface CategoryService {
     @ApiOperation(value = "新增分类")
     @PostMapping(value = "/category/save")
     Result<JSONObject> addCategory(@Validated({MingruiOperation.Add.class}) @RequestBody CategoryEntity categoryEntity);
+
 }
