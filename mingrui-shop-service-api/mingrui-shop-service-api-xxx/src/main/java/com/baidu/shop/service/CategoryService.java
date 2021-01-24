@@ -30,4 +30,7 @@ public interface CategoryService {
     @PostMapping(value = "/category/save")
     Result<JSONObject> addCategory(@Validated({MingruiOperation.Add.class}) @RequestBody CategoryEntity categoryEntity);
 
+    @ApiOperation(value = "通过品牌id查询商品分类")
+    @GetMapping(value = "/category/brand")
+    Result<List<CategoryEntity>> getByBrandId(Integer brandId);
 }
