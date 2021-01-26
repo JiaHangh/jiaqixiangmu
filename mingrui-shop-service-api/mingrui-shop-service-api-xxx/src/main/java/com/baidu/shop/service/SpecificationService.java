@@ -2,13 +2,16 @@ package com.baidu.shop.service;
 
 import com.baidu.shop.base.Result;
 import com.baidu.shop.dto.SpecGroupDTO;
+import com.baidu.shop.dto.SpecParamDTO;
 import com.baidu.shop.entity.SpecGroupEntity;
+import com.baidu.shop.entity.SpecParamEntity;
 import com.baidu.shop.validate.group.MingruiOperation;
 import com.google.gson.JsonObject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.spring.web.json.Json;
 
 import java.util.List;
 
@@ -38,4 +41,20 @@ public interface SpecificationService {
     @ApiOperation(value = "删除规格组")
     @DeleteMapping(value = "specgroup/delete/{id}")
     Result<JsonObject> deleteSpecGroup(@PathVariable Integer id);
+
+    @ApiOperation(value = "查询规格参数")
+    @GetMapping(value = "/specparam/groups")
+    Result<List<SpecParamEntity>> getSepcParamInfo(SpecParamDTO specParamDTO);
+
+    @ApiOperation(value = "新增规格组参数")
+    @PostMapping(value = "/specparam/save")
+    Result<JsonObject> saveSpecParam(@RequestBody SpecParamDTO specParamDTO);
+
+    @ApiOperation(value = "修改规格组参数")
+    @PutMapping(value = "/specparam/save")
+    Result<JsonObject> editSpecParam(@RequestBody SpecParamDTO specParamDTO);
+
+    @ApiOperation(value = "删除规格组参数")
+    @DeleteMapping(value = "specparam/delete")
+    Result<JsonObject> deleteSpecParam(Integer id);
 }
