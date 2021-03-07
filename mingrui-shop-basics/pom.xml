@@ -18,5 +18,6 @@
         <module>mingrui-shop-basics-eureka-server</module>
         <module>mingrui-shop-basic-zuul-server</module>
         <module>mingrui-shop-basic-upload-server</module>
+        <module>mingrui-shop-basic-poi-server</module>
     </modules>
 </project>

@@ -9,6 +9,7 @@ import com.baidu.shop.validate.group.MingruiOperation;
 import com.google.gson.JsonObject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,7 +28,7 @@ public interface GoodsService {
 
     @ApiOperation(value = "获取spu信息")
     @GetMapping(value = "/goods/getSpuInfo")
-    Result<List<SpuDTO>> getSpuInfo(SpuDTO spuDTO);
+    Result<List<SpuDTO>> getSpuInfo(@SpringQueryMap SpuDTO spuDTO);
 
     @ApiOperation(value = "根据分类查询品牌")
     @GetMapping(value = "/brand/getBrandInfoByCategoryId")
@@ -39,11 +40,11 @@ public interface GoodsService {
 
     @ApiOperation(value = "通过spuId查询spudetail信息")
     @GetMapping(value = "goods/getSpuDetailBySpuId")
-    Result<SpuDetailEntity> getSpuDetailBydSpu(Integer spuId);
+    Result<SpuDetailEntity> getSpuDetailBydSpu(@RequestParam Integer spuId);
 
     @ApiOperation(value = "通过spuId查询sku信息")
     @GetMapping(value = "/goods/getSkusBySpuId")
-    Result<List<SkuDTO>> getSkusBySpuId(Integer spuId);
+    Result<List<SkuDTO>> getSkusBySpuId(@RequestParam Integer spuId);
 
     @ApiOperation(value = "修改商品")
     @PutMapping(value = "/goodss/save")
