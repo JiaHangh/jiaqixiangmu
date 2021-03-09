@@ -9,6 +9,7 @@ import com.baidu.shop.mapper.BrandMapper;
 import com.baidu.shop.mapper.CategoryBrandMapper;
 import com.baidu.shop.service.BrandService;
 import com.baidu.shop.utils.BaiduBeanUtil;
+import com.baidu.shop.utils.ObjectUtil;
 import com.baidu.shop.utils.PinyinUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -49,17 +50,22 @@ public class BrandServiceImpl extends BaseApiService implements BrandService {
     }
 
     @Override
-    public Result<List<BrandEntity>> getBrandInfo(BrandDTO brandDTO) {
+    public Result<PageInfo<BrandEntity>> getBrandInfo(BrandDTO brandDTO) {
+        if (ObjectUtil.isNotNull(brandDTO.getPage()) && ObjectUtil.isNotNull(brandDTO.getRows()))
+            PageHelper.startPage(brandDTO.getPage(),brandDTO.getRows());//分页
 
-        //分页
-        PageHelper.startPage(brandDTO.getPage(),brandDTO.getRows());
         //排序
         if (!StringUtils.isEmpty(brandDTO.getSort())) PageHelper.orderBy(brandDTO.getOrderBy());
 
         BrandEntity brandEntity = BaiduBeanUtil.copyProperties(brandDTO, BrandEntity.class);
 
         Example example = new Example(BrandEntity.class);
-        example.createCriteria().andLike("name","%"+brandEntity.getName()+"%");
+        Example.Criteria criteria = example.createCriteria();
+        if(!StringUtils.isEmpty(brandEntity.getName()))
+            criteria.andLike("name","%" + brandEntity.getName() + "%");
+        if(ObjectUtil.isNotNull(brandDTO.getId()))
+            criteria.andEqualTo("id",brandDTO.getId());
+
         List<BrandEntity> list = brandMapper.selectByExample(example);
         PageInfo<BrandEntity> brandEntityPageInfo = new PageInfo<>(list);
 

@@ -61,7 +61,8 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
     public Result<List<SpuDTO>> getSpuInfo(SpuDTO spuDTO) {
         if (ObjectUtil.isNotNull(spuDTO.getPage()) && ObjectUtil.isNotNull(spuDTO.getRows()))
             PageHelper.startPage(spuDTO.getPage(),spuDTO.getRows());
-
+        if(!StringUtils.isEmpty(spuDTO.getSort()) && !StringUtils.isEmpty(spuDTO.getOrder()))
+            PageHelper.orderBy(spuDTO.getOrderBy());
         Example example = new Example(SpuEntity.class);
         Example.Criteria criteria = example.createCriteria();
         //判断是否上架
@@ -73,6 +74,9 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
         //排序
         if (!StringUtils.isEmpty(spuDTO.getSort()))
             example.setOrderByClause(spuDTO.getOrderBy());
+        //根据id查询数据
+        if(ObjectUtil.isNotNull(spuDTO.getId()))
+            criteria.andEqualTo("id",spuDTO.getId());
 
         List<SpuEntity> spuEntities = spuMapper.selectByExample(example);
 

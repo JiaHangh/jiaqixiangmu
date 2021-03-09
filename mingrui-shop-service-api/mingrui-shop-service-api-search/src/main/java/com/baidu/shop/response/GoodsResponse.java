@@ -1,4 +1,4 @@
-package com.baidu.response;
+package com.baidu.shop.response;
 
 import com.baidu.shop.base.Result;
 import com.baidu.shop.document.GoodsDoc;
@@ -34,7 +34,7 @@ public class GoodsResponse extends Result<List<GoodsDoc>> {
     private Map<String,List<String>> specMap;
 
 
-    public GoodsResponse(Long total,Long totalPage,List<BrandEntity> brandList,List<CategoryEntity> categoryList,List<GoodsDoc> goodsDocs,Map<String, List<String>> specMap){
+    public GoodsResponse(Long total, Long totalPage, List<BrandEntity> brandList, List<CategoryEntity> categoryList, List<GoodsDoc> goodsDocs, Map<String, List<String>> specMap){
 
         super(HTTPStatus.OK,"",goodsDocs);
         this.total=total;

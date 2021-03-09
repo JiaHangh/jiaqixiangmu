@@ -1,7 +1,7 @@
 package com.baidu.shop.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
-import com.baidu.response.GoodsResponse;
+import com.baidu.shop.response.GoodsResponse;
 import com.baidu.shop.base.BaseApiService;
 import com.baidu.shop.base.Result;
 import com.baidu.shop.document.GoodsDoc;
@@ -16,26 +16,21 @@ import com.baidu.shop.feign.BrandFeign;
 import com.baidu.shop.feign.CategoryFeign;
 import com.baidu.shop.feign.GoodsFeign;
 import com.baidu.shop.feign.SpecificationFeign;
-import com.baidu.shop.service.GoodsService;
 import com.baidu.shop.service.ShopElasticsearchService;
-import com.baidu.shop.status.HTTPStatus;
 import com.baidu.shop.utils.ESHighLightUtil;
 import com.baidu.shop.utils.JSONUtil;
-import com.netflix.discovery.converters.Auto;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
-import org.apache.lucene.index.Term;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
-import org.elasticsearch.search.fetch.subphase.highlight.HighlightUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.elasticsearch.core.IndexOperations;
-import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.FetchSourceFilter;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
@@ -72,10 +67,11 @@ public class ShopElasticsearchServiceImpl extends BaseApiService implements Shop
     private CategoryFeign categoryFeign;
 
     @Override
-    public GoodsResponse search(String search,Integer page) {
+    public GoodsResponse search(String search,Integer page,String filter) {
+
 
         //查询es库
-        SearchHits<GoodsDoc> searchHits = elasticsearchRestTemplate.search(this.getNativeSearchQueryBuilder(search,page).build(), GoodsDoc.class);
+        SearchHits<GoodsDoc> searchHits = elasticsearchRestTemplate.search(this.getNativeSearchQueryBuilder(search,page,filter).build(), GoodsDoc.class);
 
         List<GoodsDoc> goodsDocs = ESHighLightUtil.getHighlightList(searchHits.getSearchHits());
         //得到总条数和计算总页数
@@ -139,11 +135,31 @@ public class ShopElasticsearchServiceImpl extends BaseApiService implements Shop
 
 
     //得到NativeSearchQueryBuilder
-    private NativeSearchQueryBuilder getNativeSearchQueryBuilder(String search, Integer page){
+    private NativeSearchQueryBuilder getNativeSearchQueryBuilder(String search, Integer page,String filter){
         NativeSearchQueryBuilder nativeSearchQueryBuilder = new NativeSearchQueryBuilder();
 
         //多字段同时查询
         nativeSearchQueryBuilder.withQuery(QueryBuilders.multiMatchQuery(search,"title","brandName","categoryName"));
+        //过滤查询
+        if (!StringUtils.isEmpty(filter) && filter.length()>2){
+            //将字符串转为map集合
+            Map<String, String> filterMap = JSONUtil.toMapValueString(filter);
+            //bool 把各种其它查询通过 must （与）、 must_not （非）、 should （或）的方式进行组合
+            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+            //遍历map集合
+            filterMap.forEach((key,value) ->{
+                //匹配查询（match）
+                MatchQueryBuilder matchQueryBuilder=null;
+                //查询key是否为cid3或brandId
+                if (key.equals("cid3") || key.equals("brandId")){
+                    matchQueryBuilder = QueryBuilders.matchQuery(key, value);
+                }else{
+                    matchQueryBuilder = QueryBuilders.matchQuery("specs." + key + ".keyword",value);
+                }
+                boolQueryBuilder.must(matchQueryBuilder);
+            });
+            nativeSearchQueryBuilder.withQuery(boolQueryBuilder);
+        }
         //设置分页
         nativeSearchQueryBuilder.withPageable(PageRequest.of(page-1,10));
         //设置高亮
@@ -186,7 +202,6 @@ public class ShopElasticsearchServiceImpl extends BaseApiService implements Shop
 
         //通过分类id获取分类详细数据
         Result<List<CategoryEntity>> cateResult = categoryFeign.getCateByIds(String.join(",", categoryIdList));
-
         List<CategoryEntity> categoryList  =null;
         if (cateResult.isSuccess()){
             categoryList =cateResult.getData();

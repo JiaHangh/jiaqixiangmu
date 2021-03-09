@@ -36,5 +36,9 @@ public interface CategoryService {
 
     @ApiOperation(value = "通过id集合查询分类信息")
     @GetMapping(value = "category/getCateByIds")
-    Result<List<CategoryEntity>> getCateByIds(@RequestParam String cateIds);
+    Result<List<CategoryEntity>> getCateByIds(@RequestParam String ids);
+
+//    @ApiOperation(value = "通过分类id集合查询分类信息")
+//    @GetMapping(value = "category/getCategoryByIdList")
+//    Result<List<CategoryEntity>> getCategoryByIdList(@RequestParam String ids);
 }

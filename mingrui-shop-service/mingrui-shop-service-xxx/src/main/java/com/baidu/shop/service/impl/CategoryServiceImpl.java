@@ -30,8 +30,8 @@ public class CategoryServiceImpl extends BaseApiService implements CategoryServi
     private CategoryMapper categoryMapper;
 
     @Override
-    public Result<List<CategoryEntity>> getCateByIds(String cateIds) {
-        List<Integer> cateIdsArr = Arrays.asList(cateIds.split(","))
+    public Result<List<CategoryEntity>> getCateByIds(String ids) {
+        List<Integer> cateIdsArr = Arrays.asList(ids.split(","))
                 .stream().map(idStr ->Integer.parseInt(idStr)).collect(Collectors.toList());
         List<CategoryEntity> list = categoryMapper.selectByIdList(cateIdsArr);
         return this.setResultSuccess(list);
