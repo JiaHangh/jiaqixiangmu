@@ -19,13 +19,13 @@ import java.util.Map;
  * 6 * @Version V1.0
  * 7
  **/
-@Controller
-@RequestMapping(value = "item")
+//@Controller
+//@RequestMapping(value = "item")
 public class PageController {
-    @Autowired
+    //@Autowired
     private PageService pageService;
 
-    @GetMapping(value = "{spuId}.html")
+    //@GetMapping(value = "{spuId}.html")
     public String test(@PathVariable(value = "spuId") Integer spuId,ModelMap modelMap){
         Map<String, Object> map = pageService.getGoodsInfo(spuId);
         modelMap.putAll(map);

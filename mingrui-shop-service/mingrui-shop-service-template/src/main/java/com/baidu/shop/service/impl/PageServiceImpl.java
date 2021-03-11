@@ -29,21 +29,21 @@ import java.util.stream.Collectors;
  * 6 * @Version V1.0
  * 7
  **/
-@Service
+//@Service
 public class PageServiceImpl implements PageService {
-    @Autowired
+    //@Autowired
     private GoodsFeign goodsFeign;
 
-    @Autowired
+    //@Autowired
     private SpecificationFeign specificationFeign;
 
-    @Resource
+    //@Resource
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
 
-    @Autowired
+    //@Autowired
     private BrandFeign brandFeign;
 
-    @Autowired
+    //@Autowired
     private CategoryFeign categoryFeign;
 
     @Override

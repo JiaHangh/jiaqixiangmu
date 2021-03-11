@@ -2,6 +2,8 @@ package com.baidu.shop.service.impl;
 
 import com.baidu.shop.base.BaseApiService;
 import com.baidu.shop.base.Result;
+import com.baidu.shop.component.MrRabbitMQ;
+import com.baidu.shop.constant.MqMessageConstant;
 import com.baidu.shop.dto.SkuDTO;
 import com.baidu.shop.dto.SpuDTO;
 import com.baidu.shop.dto.SpuDetailDTO;
@@ -15,6 +17,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.JsonObject;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
@@ -56,6 +59,8 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
     @Resource
     private SpuDetailMapper spuDetailMapper;
 
+    @Autowired
+    private MrRabbitMQ mrRabbitMQ;
 
     @Override
     public Result<List<SpuDTO>> getSpuInfo(SpuDTO spuDTO) {
@@ -110,6 +115,13 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
 
     @Override
     public Result<JsonObject> saveGoods(SpuDTO spuDTO) {
+        SpuEntity spuEntity = this.saveGoodsT(spuDTO);
+        mrRabbitMQ.send(spuEntity.getId()+"", MqMessageConstant.SPU_ROUT_KEY_SAVE);
+        return this.setResultSuccess();
+    }
+
+    @Transactional
+    public SpuEntity saveGoodsT(SpuDTO spuDTO){
         Date date = new Date();
         //新增spu,新增返回主键, 给必要字段赋默认值
         SpuEntity spuEntity = BaiduBeanUtil.copyProperties(spuDTO, SpuEntity.class);
@@ -118,18 +130,25 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
         spuEntity.setCreateTime(date);
         spuEntity.setLastUpdateTime(date);
         spuMapper.insertSelective(spuEntity);
-
         //新增spuDetail
-        SpuDetailDTO spuDetail = spuDTO.getSpuDetail();
-        SpuDetailEntity spuDetailEntity = BaiduBeanUtil.copyProperties(spuDetail, SpuDetailEntity.class);
-        spuDetailEntity.setSpuId(spuEntity.getId());
-        spuDetailMapper.insertSelective(spuDetailEntity);
+        this.saveSpuDetail(spuDTO.getSpuDetail(),spuEntity.getId());
+        //新增skus,stocks
+        this.saveSkusAndStocks(spuDTO.getSkus(),spuEntity.getId(),date);
 
-        List<SkuDTO> skus = spuDTO.getSkus();
+        return spuEntity;
+    }
+
+
+    private void saveSpuDetail(SpuDetailDTO spuDetail,Integer spuId){
+        SpuDetailEntity spuDetailEntity = BaiduBeanUtil.copyProperties(spuDetail, SpuDetailEntity.class);
+        spuDetailEntity.setSpuId(spuId);
+        spuDetailMapper.insertSelective(spuDetailEntity);
+    }
+    private void saveSkusAndStocks(List<SkuDTO> skus,Integer spuId,Date date){
         skus.stream().forEach(skuDTO -> {
             //spuDTO中包含sku表新增需要的字段
             SkuEntity skuEntity = BaiduBeanUtil.copyProperties(skuDTO, SkuEntity.class);
-            skuEntity.setSpuId(spuEntity.getId());
+            skuEntity.setSpuId(spuId);
             skuEntity.setCreateTime(date);
             skuEntity.setLastUpdateTime(date);
             skuMapper.insertSelective(skuEntity);
@@ -141,7 +160,6 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
             stockMapper.insertSelective(stockEntity);
 
         });
-        return this.setResultSuccess();
     }
 
     @Override
@@ -156,9 +174,17 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
         return this.setResultSuccess(list);
     }
 
-    @Transactional
+
     @Override
     public Result<JsonObject> editGoods(SpuDTO spuDTO) {
+
+        SpuEntity spuEntity = this.editGoodsT(spuDTO);
+        mrRabbitMQ.send(spuEntity.getId()+"",MqMessageConstant.SPU_ROUT_KEY_UPDATE);
+        return this.setResultSuccess();
+    }
+
+    @Transactional
+    public SpuEntity editGoodsT(SpuDTO spuDTO){
         final Date date = new Date();
         //修改spu
         SpuEntity spuEntity = BaiduBeanUtil.copyProperties(spuDTO, SpuEntity.class);
@@ -176,12 +202,19 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
         //新增sku，stock
         this.saveSkusAndStockInfo(spuDTO,spuEntity.getId(),date);
 
+        return spuEntity;
+    }
+
+
+    @Override
+    public Result<JsonObject> deleteGoods(Integer spuId) {
+        this.deleteGoodsT(spuId);
+        mrRabbitMQ.send(spuId+"",MqMessageConstant.SPU_ROUT_KEY_DELETE);
         return this.setResultSuccess();
     }
 
     @Transactional
-    @Override
-    public Result<JsonObject> deleteGoods(Integer spuId) {
+    public void deleteGoodsT(Integer spuId){
         //删除spu
         spuMapper.deleteByPrimaryKey(spuId);
         //删除spuDetail
@@ -189,7 +222,6 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
         //删除sku 和 stock
         //通过spuId查询sku信息
         this.deleteSkusAndStock(spuId);
-        return this.setResultSuccess();
     }
 
     //封装新增sku和stock方法
